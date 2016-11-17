@@ -1,24 +1,30 @@
-#
+######################################################
 # Cookbook Name:: bobby-flay
 # Recipe:: default
+# Author: Matthew Schwartz 
 #
-# Copyright (c) 2016 The Authors, All Rights Reserved.
+# About: Configure and run a Flask server from a 
+#        github repository.
+######################################################
 
-file '/tmp/helloworld.txt' do
-  content 'Hola al Mundo'
+# Install the dependencies for Flask
+execute 'update' do
+  command 'apt-get update'
 end
 
-execute 'print_world' do
-  command 'cat /tmp/helloworld.txt'
-end
-
+package 'python'
+python_package 'Pip'
 python_package 'Flask'
 
-cookbook_file '/tmp/hello.py' do
-  source 'hello.py' 
-  action :create
+# Clone the example Flask repo
+git '/tmp' do
+  repository "https://github.com/mvs5465/mini-meyer.git"
+  revision "master"
+  action :sync
+end
+  
+# Set envvar, init database, and start server
+execute 'run_flask' do
+  command 'export FLASK_APP=meyer.py && flask initdb && flask run'
 end
 
-execute 'start_server' do
-  command 'python /tmp/hello.py'
-end
